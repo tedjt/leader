@@ -26,6 +26,19 @@ describe('leader', function () {
         done();
       });
   });
+
+  it('should convert thrown errors to returned errors and finish executing', function (done) {
+    var leader = Leader()
+      .when(hasEmail, domain)
+      .when(hasDomain, crunchbase)
+      .when(hasDomain, throwError)
+      .populate({ email: 'ilya@segment.io'}, function (err, person) {
+        assert(err);
+        assert(person);
+        assert(person.company.crunchbase === 'http://www.crunchbase.com/search?query=segment.io');
+        done();
+      });
+  });
 });
 
 
@@ -48,4 +61,8 @@ function crunchbase (person, context, next) {
     crunchbase: 'http://www.crunchbase.com/search?query=' + person.domain
   };
   next();
+}
+
+function throwError (person, context, next) {
+  throw new Error('Thrown Error!!');
 }
