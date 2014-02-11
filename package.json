@@ -2,7 +2,7 @@
   "name": "leader",
   "version": "0.1.0",
   "dependencies": {
-    "parallel-ware": "0.0.1"
+    "parallel-ware": "git://github.com/tedjt/parallel-ware"
   },
   "devDependencies": {
     "mocha": "~1.17.0"
