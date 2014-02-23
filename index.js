@@ -51,6 +51,17 @@ Leader.prototype.use = function (plugin) {
 };
 
 /**
+ * Adds a merge function to handle how middleware modules
+ * populate the same fields.
+ *
+ * @pram {Object} plugin
+ * @return {Leader}
+ */
+
+Leader.prototype.merge = function (plugin) {
+};
+
+/**
  * Adds a middleware `fn` with a `wait` function.
  *
  * @pram {Function} wait [optional]
@@ -61,6 +72,11 @@ Leader.prototype.use = function (plugin) {
 Leader.prototype.when = function (wait, fn) {
   this.middleware.when(wait, fn);
   this.proxy(fn);
+  return this;
+};
+
+Leader.prototype.conflict = function (fn) {
+  this.middleware.conflict(fn);
   return this;
 };
 

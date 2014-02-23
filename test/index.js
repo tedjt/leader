@@ -27,6 +27,22 @@ describe('leader', function () {
       });
   });
 
+  it.only('should handle merge conflicts', function (done) {
+    var leader = Leader()
+      .when(hasEmail, domain)
+      .when(hasDomain, crunchbase)
+      .when(hasEmail, badDomain)
+      .when(hasDomain, badDomain)
+      .conflict(handleConflict)
+      .populate({ email: 'ilya@segment.io'}, function (err, person) {
+        assert(!err);
+        assert(person);
+        assert(person.company.crunchbase === 'http://www.crunchbase.com/search?query=segment.io');
+        assert(person.domain === 'segment.io');
+        done();
+      });
+  });
+
   it('should convert thrown errors to returned errors and finish executing', function (done) {
     var leader = Leader()
       .when(hasEmail, domain)
@@ -52,6 +68,11 @@ function domain (person, context, next) {
   next();
 }
 
+function badDomain (person, context, next) {
+  person.domain = 'someIncorrectDomain';
+  next();
+}
+
 function hasDomain (person) {
   return person.domain != null;
 }
@@ -65,4 +86,27 @@ function crunchbase (person, context, next) {
 
 function throwError (person, context, next) {
   throw new Error('Thrown Error!!');
+}
+
+function handleConflict(key, existing, candidate, previousChoices, person, context) {
+  var weightings = {
+    '[0].domain': {
+      'domain': 0.9,
+      'badDomain': 0.3
+    }
+  };
+
+  // default to the new value
+  var returnValue = candidate;
+  // possibly revert if we have an actual weighting
+  var keyWeights = weightings[key];
+  if (keyWeights) {
+    var existingWeight = keyWeights[existing.fnName] || 0;
+    var candidateWeight = keyWeights[candidate.fnName] || 0;
+    if (existingWeight > candidateWeight) {
+      returnValue = existing;
+    }
+  }
+
+  return returnValue;
 }

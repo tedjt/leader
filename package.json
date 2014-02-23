@@ -2,7 +2,8 @@
   "name": "leader",
   "version": "0.1.0",
   "dependencies": {
-    "parallel-ware": "git://github.com/tedjt/parallel-ware"
+    "parallel-ware": "git://github.com/tedjt/parallel-ware",
+    "flatnest": "~0.2.2"
   },
   "devDependencies": {
     "mocha": "~1.17.0"
