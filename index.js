@@ -47,7 +47,7 @@ Leader.prototype.use = function (plugin) {
   if (typeof plugin !== 'object') throw new Error('plugin must be an object.');
   if (typeof plugin.wait !== 'function') throw new Error('plugin.wait must be a function.');
   if (typeof plugin.fn !== 'function') throw new Error('plugin.wait must be a function.');
-  return this.when(plugin.wait, plugin.fn);
+  return this.when(plugin.wait, plugin.fn, plugin.tier);
 };
 
 /**
@@ -69,8 +69,8 @@ Leader.prototype.merge = function (plugin) {
  * @return {Leader}
  */
 
-Leader.prototype.when = function (wait, fn) {
-  this.middleware.when(wait, fn);
+Leader.prototype.when = function (wait, fn, tier) {
+  this.middleware.when(wait, fn, tier);
   this.proxy(fn);
   return this;
 };

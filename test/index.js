@@ -27,13 +27,32 @@ describe('leader', function () {
       });
   });
 
-  it.only('should handle merge conflicts', function (done) {
+  it('should handle merge conflicts', function (done) {
     var leader = Leader()
       .when(hasEmail, domain)
       .when(hasDomain, crunchbase)
       .when(hasEmail, badDomain)
       .when(hasDomain, badDomain)
       .conflict(handleConflict)
+      .populate({ email: 'ilya@segment.io'}, function (err, person) {
+        assert(!err);
+        assert(person);
+        assert(person.company.crunchbase === 'http://www.crunchbase.com/search?query=segment.io');
+        assert(person.domain === 'segment.io');
+        done();
+      });
+  });
+
+  it('should handle tiers', function (done) {
+    var leader = Leader()
+      .when(hasEmail, domain)
+      .when(hasDomain, crunchbase)
+      .when(function(person) {
+        return person.email && !person.domain;
+      }, function() {
+        // should never execute
+        assert(false);
+      }, 1)
       .populate({ email: 'ilya@segment.io'}, function (err, person) {
         assert(!err);
         assert(person);
