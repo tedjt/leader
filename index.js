@@ -43,11 +43,11 @@ Leader.prototype.concurrency = function (max) {
  * @return {Leader}
  */
 
-Leader.prototype.use = function (plugin) {
+Leader.prototype.use = function (plugin, tier) {
   if (typeof plugin !== 'object') throw new Error('plugin must be an object.');
   if (typeof plugin.wait !== 'function') throw new Error('plugin.wait must be a function.');
   if (typeof plugin.fn !== 'function') throw new Error('plugin.wait must be a function.');
-  return this.when(plugin.wait, plugin.fn, plugin.tier);
+  return this.when(plugin.wait, plugin.fn, tier || plugin.tier);
 };
 
 /**
