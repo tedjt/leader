@@ -109,6 +109,7 @@ Leader.prototype.proxy = function (fn) {
 Leader.prototype.populate = function (person, callback) {
   if (typeof person !== 'object') throw new Error('Person must be an object.');
   var context = {};
-  this.middleware.run(person, context, callback);
-  return this;
+  var emitter = this.middleware.run(person, context, callback);
+  emitter.leader = this;
+  return emitter;
 };
