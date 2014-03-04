@@ -109,7 +109,19 @@ Leader.prototype.proxy = function (fn) {
 Leader.prototype.populate = function (person, callback) {
   if (typeof person !== 'object') throw new Error('Person must be an object.');
   var context = {};
+  // set at very low tier to make sure it runs first
+  this.when(instant, initPerson, -1);
   var emitter = this.middleware.run(person, context, callback);
   emitter.leader = this;
   return emitter;
 };
+
+// initialized person and associates keys with the `initPerson` plugin
+// useful for conflict resolution
+function initPerson(person, context, next) {
+  next();
+}
+
+function instant(person, context) {
+  return true;
+}
