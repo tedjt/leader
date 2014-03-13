@@ -62,6 +62,15 @@ describe('leader', function () {
       });
   });
 
+  it('should handle timeouts', function (done) {
+    var leader = Leader()
+      .when(hasEmail, longFn, null, 500)
+      .populate({ email: 'ilya@segment.io'}, function (err, person) {
+        assert(err);
+        done();
+      });
+  });
+
   it('should convert thrown errors to returned errors and finish executing', function (done) {
     var leader = Leader()
       .when(hasEmail, domain)
@@ -101,6 +110,12 @@ function crunchbase (person, context, next) {
     crunchbase: 'http://www.crunchbase.com/search?query=' + person.domain
   };
   next();
+}
+
+function longFn (person, context, next) {
+  setTimeout(function() {
+    next();
+  }, 2000);
 }
 
 function throwError (person, context, next) {

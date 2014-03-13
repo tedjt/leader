@@ -45,7 +45,7 @@ Leader.prototype.concurrency = function (max) {
  * @return {Leader}
  */
 
-Leader.prototype.use = function (plugin, tier) {
+Leader.prototype.use = function (plugin, tier, timeout) {
   if (typeof plugin !== 'object') throw new Error('plugin must be an object.');
   if (typeof plugin.wait !== 'function') throw new Error('plugin.wait must be a function.');
   if (typeof plugin.fn !== 'function') throw new Error('plugin.wait must be a function.');
@@ -71,8 +71,8 @@ Leader.prototype.merge = function (plugin) {
  * @return {Leader}
  */
 
-Leader.prototype.when = function (wait, fn, tier) {
-  this.middleware.when(wait, fn, tier);
+Leader.prototype.when = function (wait, fn, tier, timeout) {
+  this.middleware.when(wait, fn, tier, timeout);
   this.proxy(fn);
   return this;
 };
