@@ -16,8 +16,6 @@ module.exports = Leader;
 function Leader () {
   if (!(this instanceof Leader)) return new Leader();
   this.middleware = parallel();
-  // set at very low tier to make sure it runs first
-  this.when(instant, initPerson, -1);
 }
 
 /**
@@ -110,16 +108,31 @@ Leader.prototype.proxy = function (fn) {
 
 Leader.prototype.populate = function (person, callback) {
   if (typeof person !== 'object') throw new Error('Person must be an object.');
-  var context = {}; 
-  var emitter = this.middleware.run(person, context, callback);
+  // set at very low tier to make sure it runs first
+  this.when(instant, getInitPerson(person, {}), -1);
+  // initialize empty to let initPerson run - set values
+  // appropriately for conflict resolution.
+  var emitter = this.middleware.run({}, {}, callback);
   emitter.leader = this;
   return emitter;
 };
 
 // initialized person and associates keys with the `initPerson` plugin
 // useful for conflict resolution
-function initPerson(person, context, next) {
-  next();
+
+// create an new function that closures over passed in person
+// and popuates.
+function getInitPerson(initialPerson, initialContext) {
+  return function initPerson(person, context, next) {
+    Object.keys(initialPerson).forEach(function(k) {
+      person[k] = initialPerson[k];
+    });
+    Object.keys(initialContext).forEach(function(k) {
+      context[k] = initialContext[k];
+      person[k] = initialPerson[k];
+    });
+    return next();
+  };
 }
 
 function instant(person, context) {
