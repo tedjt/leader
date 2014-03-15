@@ -27,6 +27,23 @@ describe('leader', function () {
       });
   });
 
+  it('should handle cache', function (done) {
+    var leader = Leader()
+      .when(hasEmail, domain)
+      .when(hasDomain, crunchbase)
+      .when(hasDomain, cachedModule)
+      .conflict(handleConflict)
+      .setCache(new CacheFn())
+      .populate({ email: 'ilya@segment.io'}, function (err, person) {
+        assert(!err);
+        assert(person);
+        assert(person.company.crunchbase === 'http://www.crunchbase.com/search?query=segment.io');
+        assert(person.domain === 'segment.io');
+        assert(person.cachedValue.firstKey = 'someCachedValue');
+        done();
+      });
+  });
+
   it('should handle merge conflicts', function (done) {
     var leader = Leader()
       .when(hasEmail, domain)
@@ -112,6 +129,13 @@ function crunchbase (person, context, next) {
   next();
 }
 
+function cachedModule (person, context, next) {
+  person.cachedValue = {
+    firstKey: 'someNewValue'
+  };
+  next();
+}
+
 function longFn (person, context, next) {
   setTimeout(function() {
     next();
@@ -144,3 +168,31 @@ function handleConflict(key, existing, candidate, previousChoices, person, conte
 
   return returnValue;
 }
+
+function CacheFn () {
+  if (!(this instanceof CacheFn)) return new CacheFn();
+  this.cache = {};
+}
+CacheFn.prototype.set = function(key, person, context, callback) {
+  this.cache[key] = {
+    person: person,
+    context: context
+  };
+  if (key === 'cachedModule') {
+    assert(person.cachedValue.firstKey === 'someNewValue');
+  }
+  callback(null);
+};
+CacheFn.prototype.get = function(key, person, context, callback) {
+  if (key === 'cachedModule') {
+    person.cachedValue.firstKey = 'someCachedValue';
+    return callback(null, true);
+  } else if (this.cache[key]) {
+    // in reality use something like extend
+    Object.keys(this.cache[key].person).forEach(function(k) {
+      person[k] = this.cache[key].person[k];
+    });
+    return callback(null, true);
+  }
+  return callback(null, false);
+};

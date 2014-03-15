@@ -80,6 +80,11 @@ Leader.prototype.conflict = function (fn) {
   return this;
 };
 
+Leader.prototype.setCache = function (fn) {
+  this.middleware.setCache(fn);
+  return this;
+};
+
 /**
  * Proxy event from the fn.
  *
