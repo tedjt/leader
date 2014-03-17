@@ -173,7 +173,9 @@ function CacheFn () {
   if (!(this instanceof CacheFn)) return new CacheFn();
   this.cache = {};
 }
-CacheFn.prototype.set = function(key, person, context, callback) {
+CacheFn.prototype.set = function(key, personObj, contextObj, callback) {
+  var person = personObj.diff;
+  var context = personObj.diff;
   this.cache[key] = {
     person: person,
     context: context
