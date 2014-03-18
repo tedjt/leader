@@ -17,6 +17,7 @@ function Leader (options) {
   if (!(this instanceof Leader)) return new Leader(options);
   this.middleware = parallel();
   this.options = options;
+  this.when(instant, initPerson, -1);
 }
 
 /**
@@ -115,14 +116,12 @@ Leader.prototype.proxy = function (fn) {
 Leader.prototype.populate = function (person, callback) {
   if (typeof person !== 'object') throw new Error('Person must be an object.');
   // set at very low tier to make sure it runs first
-  this.when(instant, getInitPerson(person, {}), -1);
   // initialize empty to let initPerson run - set values
   // appropriately for conflict resolution.
   var callbackExecuted = false;
 
-  var finalPerson = {};
-  var finalContext = {};
-  var emitter = this.middleware.run(finalPerson, finalContext, function(err, person, context) {
+  var context = {};
+  var emitter = this.middleware.run(person, context, function(err, person, context) {
     if (callbackExecuted) return;
     callbackExecuted = true;
     callback(err, person, context);
@@ -133,7 +132,7 @@ Leader.prototype.populate = function (person, callback) {
     setTimeout(function() {
       if (callbackExecuted) return;
       callbackExecuted = true;
-      callback(new Error('Timeout triggered early completion'), finalPerson, finalContext);
+      callback(new Error('Timeout triggered early completion'), person, callback);
     }, this.options.maxTime);
   }
   return emitter;
@@ -141,20 +140,8 @@ Leader.prototype.populate = function (person, callback) {
 
 // initialized person and associates keys with the `initPerson` plugin
 // useful for conflict resolution
-
-// create an new function that closures over passed in person
-// and popuates.
-function getInitPerson(initialPerson, initialContext) {
-  return function initPerson(person, context, next) {
-    Object.keys(initialPerson).forEach(function(k) {
-      person[k] = initialPerson[k];
-    });
-    Object.keys(initialContext).forEach(function(k) {
-      context[k] = initialContext[k];
-      person[k] = initialPerson[k];
-    });
-    return next();
-  };
+function initPerson(person, context, next) {
+  return next();
 }
 
 function instant(person, context) {
