@@ -132,7 +132,7 @@ Leader.prototype.populate = function (person, callback) {
     setTimeout(function() {
       if (callbackExecuted) return;
       callbackExecuted = true;
-      callback(new Error('Timeout triggered early completion'), person, callback);
+      callback(new Error('Timeout triggered early completion'), person, context);
     }, this.options.maxTime);
   }
   return emitter;
