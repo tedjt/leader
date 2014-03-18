@@ -14,7 +14,7 @@ module.exports = Leader;
  */
 
 function Leader (options) {
-  if (!(this instanceof Leader)) return new Leader();
+  if (!(this instanceof Leader)) return new Leader(options);
   this.middleware = parallel();
   this.options = options;
 }
