@@ -13,9 +13,10 @@ module.exports = Leader;
  * Initialize a `Leader` instance.
  */
 
-function Leader () {
+function Leader (options) {
   if (!(this instanceof Leader)) return new Leader();
   this.middleware = parallel();
+  this.options = options;
 }
 
 /**
@@ -117,8 +118,24 @@ Leader.prototype.populate = function (person, callback) {
   this.when(instant, getInitPerson(person, {}), -1);
   // initialize empty to let initPerson run - set values
   // appropriately for conflict resolution.
-  var emitter = this.middleware.run({}, {}, callback);
+  var callbackExecuted = false;
+
+  var finalPerson = {};
+  var finalContext = {};
+  var emitter = this.middleware.run(finalPerson, finalContext, function(err, person, context) {
+    if (callbackExecuted) return;
+    callbackExecuted = true;
+    callback(err, person, context);
+  });
   emitter.leader = this;
+
+  if (this.options && this.options.maxTime) {
+    setTimeout(function() {
+      if (callbackExecuted) return;
+      callbackExecuted = true;
+      callback(new Error('Timeout triggered early completion'), finalPerson, finalContext);
+    }, this.options.maxTime);
+  }
   return emitter;
 };
 
