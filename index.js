@@ -113,14 +113,17 @@ Leader.prototype.proxy = function (fn) {
  * @param {Function} callback
  */
 
-Leader.prototype.populate = function (person, callback) {
+Leader.prototype.populate = function (person, context, callback) {
   if (typeof person !== 'object') throw new Error('Person must be an object.');
+  if (typeof context === 'function') {
+    callback = context;
+    context = {};
+  }
   // set at very low tier to make sure it runs first
   // initialize empty to let initPerson run - set values
   // appropriately for conflict resolution.
   var callbackExecuted = false;
 
-  var context = {};
   var emitter = this.middleware.run(person, context, function(err, person, context) {
     if (callbackExecuted) return;
     callbackExecuted = true;
